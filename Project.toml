@@ -13,6 +13,11 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 Stencils = "264155e8-78a8-466a-aa59-c9b28c34d21a"
 
+# The registered DynamicGrids release no longer loads with current packages.
+# Only used when this package is the active project; ignored as a dependency.
+[sources]
+DynamicGrids = {url = "https://github.com/mkborregaard/DynamicGrids.jl", rev = "maintained"}
+
 [compat]
 Distributions = "0.21, 0.22, 0.23, 0.24, 0.25"
 DocStringExtensions = "0.8, 0.9"
