@@ -8,7 +8,6 @@ if VERSION >= v"1.5.0"
     Aqua.test_project_extras(Dispersal)
     Aqua.test_stale_deps(Dispersal)
     Aqua.test_deps_compat(Dispersal)
-    Aqua.test_project_toml_formatting(Dispersal)
 end
 
 @time @safetestset "integration" begin include("integration.jl") end

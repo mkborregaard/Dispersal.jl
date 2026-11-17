@@ -19,14 +19,23 @@ Stencils = "264155e8-78a8-466a-aa59-c9b28c34d21a"
 DynamicGrids = {url = "https://github.com/mkborregaard/DynamicGrids.jl", rev = "maintained"}
 
 [compat]
+Aqua = "0.8"
 Dates = "1"
+DimensionalData = "0.27, 0.28, 0.29, 0.30"
 Distributions = "0.21, 0.22, 0.23, 0.24, 0.25"
 DocStringExtensions = "0.8, 0.9"
 DynamicGrids = "0.21"
 LinearAlgebra = "1"
+OffsetArrays = "1"
+Random = "1"
 Reexport = "0.2, 1.0"
+SafeTestsets = "0.1"
+Setfield = "0.6, 0.7, 0.8, 1"
+StaticArrays = "0.12, 1"
 Statistics = "1"
 Stencils = "0.3"
+Test = "1"
+Unitful = "1"
 julia = "1"
 
 [extras]
