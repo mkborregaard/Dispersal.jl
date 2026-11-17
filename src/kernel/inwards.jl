@@ -14,11 +14,10 @@ grid.
 
 # Keywords
 
-- `neighborhood`: Any DynamicGrids.jl `Neighborhood`, or an
-    already constructed [`DispersalKernel`](@ref). Using this keyword means `radius` is
-    ignored, and for a `DispersalKernel`, all other keywords are ignored.
-- `neighborhood`: `Neighborhood` object specifying the range from the origin of the
-    discretised dispersal kernal. Defaults to `Window(radius)`.
+- `stencil`: Any Stencils.jl `Stencil` specifying the range from the origin of the
+    discretised dispersal kernal, or an already constructed [`DispersalKernel`](@ref).
+    Using this keyword means `radius` is ignored, and for a `DispersalKernel`, all other
+    keywords are ignored. Defaults to `Window(radius)`.
 - `formulation`: kernel formulation object holding the exact form of the kernal.
     Default [`ExponentialKernel`](@ref).
 - `cellsize`: the cell size of the discretised kernal (i.e. simulation grid size).

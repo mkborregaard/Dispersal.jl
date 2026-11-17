@@ -58,8 +58,8 @@ DispersalKernel{R}(; radius=R, kw...) where R = DispersalKernel(; radius=radius,
 
 ConstructionBase.constructorof(::Type{<:DispersalKernel}) = DispersalKernel
 
-function DG.Stencils.rebuild(n::DispersalKernel{R,N,L,<:Any,<:Any,K,F,C,D}, buffer) where {R,N,L,K,F,C,D}
-    newstencil = Stencils.rebuild(stencil(n), buffer)
+function DG.Stencils.rebuild(n::DispersalKernel{R,N,L,<:Any,<:Any,K,F,C,D}, neighbors, center) where {R,N,L,K,F,C,D}
+    newstencil = Stencils.rebuild(stencil(n), neighbors, center)
     DispersalKernel{R,N,L,eltype(newstencil),typeof(newstencil),K,F,C,D}(
         newstencil, kernel(n), formulation(n), cellsize(n), distancemethod(n)
     )

@@ -157,10 +157,6 @@ function alloc_dest_shortlist(nshortlisted, (h, w))
     Precalc[Vector{Interval}(undef, nshortlisted) for i in 1:h, j in 1:w]
 end
 
-function alloc_threads(human_buffer, nshortlisted)
-    [alloc_gravities(human_buffer, nshortlisted) for thread in 1:Threads.nthreads()]
-end
-
 function alloc_gravities(human, nshortlisted)
     gravities = Matrix{Gravity}(undef, size(human)...)
     for j in 1:size(gravities, 2), i in 1:size(gravities, 1)
@@ -184,11 +180,19 @@ function precalc_human_dispersal!(
     precalc_human_exponent!(human_buffer, human_exponent)
     precalc_distances!(distances, dist_exponent, cellsize, scale)
 
-    # Calculate cell gravities by column in separate threads
-    thread_alloc = alloc_threads(human_buffer, nshortlisted)
-    Threads.@threads for j in 1:size(human_buffer, 2)
-        precalc_col!(dest_shortlists, nshortlisted, human_buffer, distances, thread_alloc, j)
+    # Calculate cell gravities by column in separate tasks, each with its own buffers.
+    # Buffers are not indexed by `threadid()`, as tasks can migrate between threads.
+    ncols = size(human_buffer, 2)
+    colchunks = Iterators.partition(1:ncols, cld(ncols, Threads.nthreads()))
+    tasks = map(colchunks) do cols
+        Threads.@spawn begin
+            col_alloc = alloc_gravities(human_buffer, nshortlisted)
+            for j in cols
+                precalc_col!(dest_shortlists, nshortlisted, human_buffer, distances, col_alloc, j)
+            end
+        end
     end
+    foreach(wait, tasks)
     return dest_shortlists
 end
 
@@ -211,8 +215,7 @@ centercenter_distance(a, b) = sqrt((a - 1)^2 + (b - 1)^2)
 
 # Precalculate human dispersal shortlist for every cell in a column.
 # Working on columns is a clean way to spread the load accross multiple processors.
-function precalc_col!(dest_shortlists, nshortlisted, human, distances, thread_alloc, j)
-    col_alloc = thread_alloc[Threads.threadid()]
+function precalc_col!(dest_shortlists, nshortlisted, human, distances, col_alloc, j)
     for i = 1:size(human, 1)
         precalc_cell!(dest_shortlists, nshortlisted, human, distances, col_alloc, i, j)
     end

@@ -143,7 +143,7 @@ end
     hood = Positional((-1, 0), (0, -1), (0, 0), (1, 0), (0, 1)) 
 
     @testset "inwards" begin
-        rule = InwardsDispersal(; neighborhood=hood, formulation=TestFormulation())
+        rule = InwardsDispersal(; stencil=hood, formulation=TestFormulation())
         output = REPLOutput(init; tspan=1:3, store=true)
         for kw in ((), (opt=SparseOpt(),), (proc=ThreadedCPU(),), (proc=ThreadedCPU(), opt=SparseOpt()))
             sim!(output, rule; kw...)
@@ -154,7 +154,7 @@ end
     end
 
     @testset "outwards" begin
-        rule = OutwardsDispersal(; neighborhood=hood, formulation=TestFormulation())
+        rule = OutwardsDispersal(; stencil=hood, formulation=TestFormulation())
         output = REPLOutput(init; tspan=1:3, store=true)
         for kw in ((), (opt=SparseOpt(),), (proc=ThreadedCPU(),), (proc=ThreadedCPU(), opt=SparseOpt()))
             sim!(output, rule; kw...)

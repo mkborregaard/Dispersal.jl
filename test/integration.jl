@@ -1,4 +1,5 @@
 using Dispersal, Test, Unitful, Dates, DimensionalData
+using DimensionalData.Lookups: Cyclic, ForwardOrdered, Intervals, Start
 using Unitful: d, s
 
 struct TestFormulation <: KernelFormulation end
@@ -9,7 +10,7 @@ struct TestFormulation <: KernelFormulation end
             1.0 0.0 1.0]
     radius = 2
     dk = DispersalKernel{radius}(formulation=ExponentialKernel(1.0), cellsize=1.0).kernel
-    @test size(dk) == (5, 5)
+    @test length(dk) == 25
     @test sum(dk) ≈ 1.0
 end
 
@@ -19,16 +20,16 @@ end
     hood = DispersalKernel{radius}(; formulation=ExponentialKernel(2.0))
 
 
-    # time sequence for auxillary input
+    # time sequence for auxillary input, repeating every 20 days
     a = cat([0.1 0.2; 0.3 0.4], [0.5 0.6; 0.7 0.8], dims=3)
-    dimz = Y(1:2), X(1:2), Ti(1d:10d:11d)
+    dimz = Y(1:2), X(1:2), Ti(Cyclic(1d:10d:11d; cycle=20d, order=ForwardOrdered(), sampling=Intervals(Start())))
     suitseq = DimArray(a, dimz)
 
     # Regular
-    ruleset1 = Ruleset(InwardsDispersal(neighborhood=hood),
+    ruleset1 = Ruleset(InwardsDispersal(stencil=hood),
                        ThresholdGrowth(rate=Aux(:suitseq), threshold=0.4); timestep=1d)
     # Chained
-    ruleset2 = Ruleset(Chain(InwardsDispersal(neighborhood=hood),
+    ruleset2 = Ruleset(Chain(InwardsDispersal(stencil=hood),
                        ThresholdGrowth(rate=Aux(:suitseq), threshold=0.4)) ; timestep=1d)
     output1 = ArrayOutput(init; tspan=1d:1d:25d)
     output2 = ArrayOutput(init; tspan=1d:1d:25d)
@@ -138,7 +139,7 @@ end
 
     @testset "inwards population dispersal fills the grid where reachable and suitable" begin
         hood = DispersalKernel{rad}(; formulation=TestFormulation(), distancemethod=CentroidToCentroid())
-        inwards = InwardsDispersal(neighborhood=hood)
+        inwards = InwardsDispersal(stencil=hood)
         rules = Ruleset(inwards, mask; timestep=1d)
         output = ArrayOutput(init; tspan=4d:1d:6d, aux=(suit=suit,))
         for kw in ((), (opt=SparseOpt(),), (proc=ThreadedCPU(),), (proc=ThreadedCPU(), opt=SparseOpt()))
@@ -157,7 +158,7 @@ end
 
     @testset "outwards population dispersal fills the grid where reachable and suitable" begin
         hood = DispersalKernel{rad}(; formulation=TestFormulation(), distancemethod=CentroidToCentroid())
-        outwards = OutwardsDispersal(neighborhood=hood)
+        outwards = OutwardsDispersal(stencil=hood)
         rules = Ruleset(outwards, mask; timestep=Month(1))
         output = ArrayOutput(init; tspan=Date(2001, 1):Month(1):Date(2001, 3), aux=(suit=suit,))
         for kw in ((), (opt=SparseOpt(),), (proc=ThreadedCPU(),), (proc=ThreadedCPU(), opt=SparseOpt()))
@@ -178,10 +179,10 @@ end
     outdisp_with_mask = OutwardsDispersal(
         formulation=ExponentialKernel(λ=0.0125),
         distancemethod=AreaToArea(30),
-        mask_flag=Mask()
+        maskbehavior=CheckMaskEdges()
     )
 
-    # Create OutwardsDispersal without a mask, NoMask is default
+    # Create OutwardsDispersal without a mask, IgnoreMaskEdges is default
     outdisp_without_mask = OutwardsDispersal(
         formulation=ExponentialKernel(λ=0.0125),
         distancemethod=AreaToArea(30)
